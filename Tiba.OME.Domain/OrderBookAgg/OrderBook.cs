@@ -52,26 +52,24 @@ public class OrderBook : AggregateRootBase<Guid>
 
     private void MatchOrder(IOrder incomingOrder, PriorityQueue<IOrder, IOrder> otherSideQueue)
     {
-        IOrder? order = null;
-        while (otherSideQueue.Count > 0 && (order == null || order.OrderState == OrderState.Active))
+        IOrder? topOrder;
+        while (otherSideQueue.Count > 0 && (topOrder = otherSideQueue.Peek()) != null &&
+               !IsOrderFulfilled(incomingOrder))
         {
-            var highPriorityOrder = order == null ? otherSideQueue.Peek() : order;
-            if (highPriorityOrder.OrderState != OrderState.Active)
+            if (!IsOrderActive(topOrder))
             {
                 otherSideQueue.Dequeue();
                 continue;
             }
 
-            if (!IsOrderMatchedBy(incomingOrder, highPriorityOrder))
+            if (!IsOrderMatchedBy(incomingOrder, topOrder))
                 break;
 
-            var matchedQuantity = Math.Min(highPriorityOrder.Quantity, incomingOrder.Quantity);
-            SetLeftOver(matchedQuantity, highPriorityOrder);
+            var matchedQuantity = Math.Min(topOrder.Quantity, incomingOrder.Quantity);
+            SetLeftOver(matchedQuantity, topOrder);
             SetLeftOver(matchedQuantity, incomingOrder);
 
-            Publish(new OrderMatchedDomainEvent(matchedQuantity, incomingOrder, highPriorityOrder));
-            if (!IsOrderFulfilled(incomingOrder)) continue;
-            break;
+            Publish(new OrderMatchedDomainEvent(matchedQuantity, incomingOrder, topOrder));
         }
     }
 
@@ -158,7 +156,7 @@ public class OrderBook : AggregateRootBase<Guid>
 
     private bool IsOrderActive(IOrder incomingOrder)
     {
-        return incomingOrder.Quantity > 0;
+        return incomingOrder?.Quantity > 0;
     }
 
     private void SetAsCancelled(IOrder? incomingOrder)
