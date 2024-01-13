@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiba.OME.Domain", "Tiba.OME.Domain\Tiba.OME.Domain.csproj", "{3E0E9D55-8307-4EF2-928D-98E8A58BE8AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiba.OME.Domain.Tests.Unit", "Tiba.OME.Domain.Tests.Unit\Tiba.OME.Domain.Tests.Unit.csproj", "{435CB10C-6E89-4B9F-AAE5-ED2782E3D52F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiba.OME.Domain.Core", "Tiba.OME.Domain.Core\Tiba.OME.Domain.Core.csproj", "{0107302A-3D98-4D41-96D9-8B28C0D49107}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiba.OME.Application", "Tiba.OME.Application\Tiba.OME.Application.csproj", "{FDD589B8-2487-4BA3-B9BC-9101F9A17310}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiba.OME.Application.Tests.Unit", "Tiba.OME.Application.Tests.Unit\Tiba.OME.Application.Tests.Unit.csproj", "{6C2D9CBE-1136-4BEB-9B32-A8866E236451}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiba.OME.Application.Contracts", "Tiba.OME.Application.Contracts\Tiba.OME.Application.Contracts.csproj", "{EEDD3AF8-3C29-4739-9F94-9EC237ECCAB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiba.OME.API", "Tiba.OME.API\Tiba.OME.API.csproj", "{0E4A466C-FF7B-4EBB-82AE-0A2DB09EE247}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3E0E9D55-8307-4EF2-928D-98E8A58BE8AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E0E9D55-8307-4EF2-928D-98E8A58BE8AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E0E9D55-8307-4EF2-928D-98E8A58BE8AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E0E9D55-8307-4EF2-928D-98E8A58BE8AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{435CB10C-6E89-4B9F-AAE5-ED2782E3D52F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{435CB10C-6E89-4B9F-AAE5-ED2782E3D52F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{435CB10C-6E89-4B9F-AAE5-ED2782E3D52F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{435CB10C-6E89-4B9F-AAE5-ED2782E3D52F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0107302A-3D98-4D41-96D9-8B28C0D49107}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0107302A-3D98-4D41-96D9-8B28C0D49107}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0107302A-3D98-4D41-96D9-8B28C0D49107}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0107302A-3D98-4D41-96D9-8B28C0D49107}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDD589B8-2487-4BA3-B9BC-9101F9A17310}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDD589B8-2487-4BA3-B9BC-9101F9A17310}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDD589B8-2487-4BA3-B9BC-9101F9A17310}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDD589B8-2487-4BA3-B9BC-9101F9A17310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C2D9CBE-1136-4BEB-9B32-A8866E236451}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C2D9CBE-1136-4BEB-9B32-A8866E236451}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C2D9CBE-1136-4BEB-9B32-A8866E236451}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C2D9CBE-1136-4BEB-9B32-A8866E236451}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEDD3AF8-3C29-4739-9F94-9EC237ECCAB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEDD3AF8-3C29-4739-9F94-9EC237ECCAB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEDD3AF8-3C29-4739-9F94-9EC237ECCAB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEDD3AF8-3C29-4739-9F94-9EC237ECCAB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E4A466C-FF7B-4EBB-82AE-0A2DB09EE247}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E4A466C-FF7B-4EBB-82AE-0A2DB09EE247}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E4A466C-FF7B-4EBB-82AE-0A2DB09EE247}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E4A466C-FF7B-4EBB-82AE-0A2DB09EE247}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
