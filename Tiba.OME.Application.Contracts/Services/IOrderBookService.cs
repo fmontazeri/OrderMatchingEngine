@@ -3,7 +3,7 @@ using Tiba.OME.Domain.OrderBookAgg;
 
 namespace Tiba.OME.Application.Contracts.Services;
 
-public interface IOrderBookService
+public interface IOrderBookService  : IBaseApplicationService
 {
     Task<IOrder> AddOrder(AddOrderCommand command);
     Task<IOrder> UpdateOrder(UpdateOrderCommand command);
