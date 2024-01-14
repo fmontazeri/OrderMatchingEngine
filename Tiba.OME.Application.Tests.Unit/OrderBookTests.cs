@@ -23,19 +23,19 @@ public class OrderBookTests : BaseOrderBookTest
     {
         var orderBook = _builder.Build();
         var fakeOrderBookRepo = Substitute.For<IOrderBookRepository>();
-        fakeOrderBookRepo.GetByInstrumentCode(InstrumentConsts.OfoghBKoorosh).Returns(orderBook);
+        fakeOrderBookRepo.GetByInstrumentCode(orderBook.InstrumentCode).Returns(orderBook);
         var orderBookService = new OrderBookService(fakeOrderBookRepo);
-        var commandHandler = Substitute.For<OrderBookCommandHandler>(orderBookService);
-
         var command = new AddOrderCommand(OrderSide.Buy, 10, 1200, InstrumentConsts.OfoghBKoorosh,
             CustomerConsts.FatemehMontazeri);
 
-        await commandHandler.Received(1).Handle(command);
+        var expected = await orderBookService.AddOrder(command);
+
         await fakeOrderBookRepo.Received(1).UpdateAsync(orderBook);
+        await fakeOrderBookRepo.Received(1).GetByInstrumentCode(orderBook.InstrumentCode);
         orderBook.Orders.Count.Should().Be(1);
-        //  orderBook.AssertOrderOptions(expected);
+        orderBook.AssertOrderOptions(expected);
         orderBook.GetPublishedEvents().Should().HaveCount(1);
-        // orderBook.AssertEvent(new OrderPlacedDomainEvent(expected));
+        orderBook.AssertEvent(new OrderPlacedDomainEvent(expected));
     }
 
     [Fact]
@@ -49,18 +49,19 @@ public class OrderBookTests : BaseOrderBookTest
         var fakeOrderBookRepo = Substitute.For<IOrderBookRepository>();
         fakeOrderBookRepo.GetByInstrumentCode(postedOrder.InstrumentCode).Returns(orderBook);
         var fakeOrderBookService = new OrderBookService(fakeOrderBookRepo);
-        var commandHandler = Substitute.For<OrderBookCommandHandler>(fakeOrderBookService);
         var command = new UpdateOrderCommand(postedOrder.Id, postedOrder.Quantity, 1600, postedOrder.InstrumentCode);
 
-        await commandHandler.Received(1).Handle(command);
+        var expected = await fakeOrderBookService.UpdateOrder(command);
+
         await fakeOrderBookRepo.Received(1).UpdateAsync(orderBook);
+        await fakeOrderBookRepo.Received(1).GetByInstrumentCode(postedOrder.InstrumentCode);
         postedOrder.OrderState.Should().Be(OrderState.Cancelled);
         orderBook.Orders.Count.Should().Be(1);
         orderBook.Orders[postedOrder.Id].Should().BeNull();
-        // orderBook.AssertOrderOptions(expected);
+        orderBook.AssertOrderOptions(expected);
         orderBook.GetPublishedEvents().Should().HaveCount(2);
         orderBook.AssertEvent(new OrderCancelledDomainEvent(postedOrder));
-        // orderBook.AssertEvent(new OrderPlacedDomainEvent(expected));
+        orderBook.AssertEvent(new OrderPlacedDomainEvent(expected));
     }
 
 
@@ -78,12 +79,12 @@ public class OrderBookTests : BaseOrderBookTest
         var fakeOrderBookRepo = Substitute.For<IOrderBookRepository>();
         fakeOrderBookRepo.GetByInstrumentCode(postedOrder.InstrumentCode).Returns(orderBook);
         var orderBookService = new OrderBookService(fakeOrderBookRepo);
-        var commandHandler = Substitute.For<OrderBookCommandHandler>(orderBookService);
-        var command = new UpdateOrderCommand(postedOrder.Id, newQuantity, postedOrder.Price, postedOrder.InstrumentCode);
+        var command =
+            new UpdateOrderCommand(postedOrder.Id, newQuantity, postedOrder.Price, postedOrder.InstrumentCode);
 
         var exception = await Assert.ThrowsAsync<QuantityIsNotValidException>(async () =>
         {
-            await commandHandler.Handle(command);
+            await orderBookService.UpdateOrder(command);
         });
         exception.Message.Should().Be(QuantityIsNotValidException.ErrorMessage);
     }
@@ -92,7 +93,7 @@ public class OrderBookTests : BaseOrderBookTest
     [Theory]
     [InlineData(100, 0)]
     [InlineData(100, -10)]
-    public async Task UpdateOrder_Should_Throw_Exception_Where_The_New_Quantity_Is_Lowe_Than_The_Given_Price(
+    public async Task UpdateOrder_Should_Throw_Exception_Where_The_New_Quantity_Is_Lower_Than_The_Given_Price(
         decimal price, decimal newPrice)
     {
         var postedOrder = _testOrderBuilder
@@ -103,13 +104,12 @@ public class OrderBookTests : BaseOrderBookTest
         var fakeOrderBookRepo = Substitute.For<IOrderBookRepository>();
         fakeOrderBookRepo.GetByInstrumentCode(postedOrder.InstrumentCode).Returns(orderBook);
         var orderBookService = new OrderBookService(fakeOrderBookRepo);
-        var commandHandler = Substitute.For<OrderBookCommandHandler>(orderBookService);
         var command =
             new UpdateOrderCommand(postedOrder.Id, postedOrder.Quantity, newPrice, postedOrder.InstrumentCode);
 
         var exception = await Assert.ThrowsAsync<PriceIsNotValidException>(async () =>
         {
-            await commandHandler.Handle(command);
+            await orderBookService.UpdateOrder(command);
         });
         exception.Message.Should().Be(PriceIsNotValidException.ErrorMessage);
     }
@@ -125,15 +125,15 @@ public class OrderBookTests : BaseOrderBookTest
         fakeOrderBookRepo.GetByInstrumentCode(postedOrder.InstrumentCode).Returns(orderBook);
         var orderBookService = new OrderBookService(fakeOrderBookRepo);
         var cancelOrderCommand = new CancelOrderCommand(postedOrder.Id, postedOrder.InstrumentCode);
-        var commandHandler = Substitute.For<OrderBookCommandHandler>(orderBookService);
 
-        await commandHandler.Received(1).Handle(cancelOrderCommand);
+        var expected = await orderBookService.CancelOrder(cancelOrderCommand);
+
         await fakeOrderBookRepo.Received(1).UpdateAsync(orderBook);
-        // order.OrderState.Should().Be(OrderState.Cancelled);
+        expected.OrderState.Should().Be(OrderState.Cancelled);
         orderBook.Orders.Count.Should().Be(0);
         orderBook.Orders[postedOrder.Id].Should().BeNull();
         orderBook.GetPublishedEvents().Count.Should().Be(1);
-        //orderBook.AssertEvent(new OrderCancelledDomainEvent(order));
+        orderBook.AssertEvent(new OrderCancelledDomainEvent(expected));
     }
 
     [Fact]
