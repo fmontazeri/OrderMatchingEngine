@@ -4,7 +4,7 @@ using Tiba.OME.Application.Contracts.Services;
 
 namespace Tiba.OME.Application.CommandHandlers;
 
-public class OrderBookCommandHandler(IOrderBookService orderBookService) :
+public class OrderBookCommandHandler(IOrderBookService orderBookService ) :
     ICommandHandler<AddOrderCommand>
     , ICommandHandler<UpdateOrderCommand>,
     ICommandHandler<CancelOrderCommand>

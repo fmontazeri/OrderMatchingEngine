@@ -1,3 +1,4 @@
+using NSubstitute;
 using Tiba.OME.Domain.OrderBookAgg;
 using Tiba.OME.Domain.Tests.Unit.Consts;
 
@@ -19,7 +20,7 @@ public class OrderBookTestBuilder
     public OrderBook Build(params IOrder[] orders)
     {
         this.Orders.AddRange(orders);
-        return new OrderBook(this.Id, InstrumentCode, Orders);       
+        return new OrderBook(this.Id, InstrumentCode, Orders);
     }
 
     public OrderBook Build()

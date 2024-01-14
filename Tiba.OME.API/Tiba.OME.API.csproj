@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Tiba.OME.Application.Contracts\Tiba.OME.Application.Contracts.csproj" />
+      <ProjectReference Include="..\Tiba.OME.Application\Tiba.OME.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>

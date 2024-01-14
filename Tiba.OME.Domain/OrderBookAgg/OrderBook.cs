@@ -40,7 +40,7 @@ public class OrderBook : AggregateRootBase<Guid>
         }
     }
 
-    public IOrder AddOrder(IOrderOptions options)
+    public virtual IOrder AddOrder(IOrderOptions options)
     {
         GuardAgainstNotMatchInstrument(options);
         var incomingOrder = Order.New(options);
@@ -56,13 +56,13 @@ public class OrderBook : AggregateRootBase<Guid>
         while (otherSideQueue.Count > 0 && (topOrder = otherSideQueue.Peek()) != null &&
                !IsOrderFulfilled(incomingOrder))
         {
-            if (!IsOrderActive(topOrder))
+            if (!topOrder.IsValidToMatch())
             {
                 otherSideQueue.Dequeue();
                 continue;
             }
 
-            if (!IsOrderMatchedBy(incomingOrder, topOrder))
+            if (!incomingOrder.IsMatchedTo(topOrder))
                 break;
 
             var matchedQuantity = Math.Min(topOrder.Quantity, incomingOrder.Quantity);
@@ -72,26 +72,6 @@ public class OrderBook : AggregateRootBase<Guid>
             Publish(new OrderMatchedDomainEvent(matchedQuantity, incomingOrder, topOrder));
         }
     }
-
-    // private void MatchOrder(IOrder incomingOrder,
-    //     PriorityQueue<IOrder, IOrder> otherSideQueue)
-    // {
-    //     while (otherSideQueue.Count > 0)
-    //     {
-    //         var activeQueuedOrder = PeekActiveOrder(otherSideQueue);
-    //         if (!(activeQueuedOrder != null &&
-    //               IsOrderMatchedBy(incomingOrder, activeQueuedOrder)))
-    //             break;
-    //
-    //         var matchedQuantity = Math.Min(activeQueuedOrder.Quantity, incomingOrder.Quantity);
-    //         SetLeftOver(matchedQuantity, activeQueuedOrder);
-    //         SetLeftOver(matchedQuantity, incomingOrder);
-    //
-    //         Publish(new OrderMatchedDomainEvent(matchedQuantity, incomingOrder, activeQueuedOrder));
-    //         if (!IsOrderFulfilled(incomingOrder)) continue;
-    //         break;
-    //     }
-    // }
 
     public IOrder ModifyOrder(Guid orderId, int quantity, decimal price)
     {
@@ -109,31 +89,6 @@ public class OrderBook : AggregateRootBase<Guid>
         return incomingOrder;
     }
 
-    // private IOrder? PeekActiveOrder(PriorityQueue<IOrder, IOrder> otherSideQueue)
-    // {
-    //     while (otherSideQueue.Count > 0)
-    //     {
-    //         var activeOrder = otherSideQueue.Peek();
-    //         if (activeOrder.OrderState == OrderState.Active) return activeOrder;
-    //         otherSideQueue.Dequeue();
-    //     }
-    //
-    //     return null;
-    // }
-
-    private bool IsOrderMatchedBy(IOrder incomingOrder, IOrder queuedOrder)
-    {
-        if (DoesBuyAndSellOrderBelongToACustomer(incomingOrder, queuedOrder)) return false;
-        return incomingOrder.OrderSide == OrderSide.Buy
-            ? incomingOrder.Price >= queuedOrder.Price
-            : incomingOrder.Price <= queuedOrder.Price;
-    }
-
-    private bool DoesBuyAndSellOrderBelongToACustomer(IOrder incomingOrder, IOrder queuedOrder)
-    {
-        return incomingOrder.CustomerCode == queuedOrder.CustomerCode;
-    }
-
     private void GuardAgainstNotMatchInstrument(IOrderOptions options)
     {
         if (options.InstrumentCode != this.InstrumentCode)
@@ -145,7 +100,7 @@ public class OrderBook : AggregateRootBase<Guid>
         if (!Orders.ContainsKey(order.Id)) return;
         Orders.Remove(order.Id);
         order.SetLeftOver(matchedQuantity);
-        if (IsOrderActive(order))
+        if (order.IsValidToMatch())
             Orders.Add(order.Id, order);
     }
 
@@ -154,10 +109,10 @@ public class OrderBook : AggregateRootBase<Guid>
         return incomingOrder.Quantity == 0;
     }
 
-    private bool IsOrderActive(IOrder incomingOrder)
-    {
-        return incomingOrder?.Quantity > 0;
-    }
+    // private bool IsOrderActive(IOrder incomingOrder)
+    // {
+    //     return incomingOrder?.Quantity > 0;
+    // }
 
     private void SetAsCancelled(IOrder? incomingOrder)
     {
