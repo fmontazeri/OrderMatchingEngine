@@ -19,7 +19,8 @@ public abstract class BaseOrderBookTest
     {
         CurrentOrderBook = _builder.Build(incomingOrders);
     }
-
+    
+   
     protected IOrder NewOrder(OrderSide orderSide, int quantity, decimal price,
         string customerCode = CustomerConsts.YaserAbbasi)
     {

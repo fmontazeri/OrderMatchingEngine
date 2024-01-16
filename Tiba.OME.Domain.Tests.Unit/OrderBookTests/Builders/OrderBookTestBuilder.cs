@@ -27,4 +27,9 @@ public class OrderBookTestBuilder
     {
         return new OrderBook(this.Id, InstrumentCode, Orders);
     }
+    
+    public OrderBookQueuingDecorator BuildWithDecorator()
+    {
+        return new OrderBookQueuingDecorator(this.Id, InstrumentCode, Orders);
+    }
 }
