@@ -13,7 +13,7 @@ public class OrderBookService(IOrderBookRepository orderBookRepository)
         var orderBook = await orderBookRepository.GetByInstrumentCode(command.InstrumentCode);
         if (orderBook == null) throw new OrderBookNotFound();
 
-        var order = orderBook.AddOrder(command);
+        var order = await orderBook.AddOrder(command);
         await orderBookRepository.UpdateAsync(orderBook);
         await orderBookRepository.SaveAsync();
         return order;
@@ -24,7 +24,7 @@ public class OrderBookService(IOrderBookRepository orderBookRepository)
         var orderBook = await orderBookRepository.GetByInstrumentCode(command.InstrumentCode);
         if (orderBook == null) throw new OrderBookNotFound();
 
-        var order = orderBook.ModifyOrder(command.OrderId, command.Quantity, command.Price);
+        var order = await orderBook.ModifyOrder(command.OrderId, command.Quantity, command.Price);
         await orderBookRepository.UpdateAsync(orderBook);
         await orderBookRepository.SaveAsync();
         return order;
@@ -35,7 +35,7 @@ public class OrderBookService(IOrderBookRepository orderBookRepository)
         var orderBook = await orderBookRepository.GetByInstrumentCode(command.InstrumentCode);
         if (orderBook == null) throw new OrderBookNotFound();
 
-        var order = orderBook.CancelOrder(command.OrderId);
+        var order = await orderBook.CancelOrder(command.OrderId);
         await orderBookRepository.UpdateAsync(orderBook);
         await orderBookRepository.SaveAsync();
         return order;

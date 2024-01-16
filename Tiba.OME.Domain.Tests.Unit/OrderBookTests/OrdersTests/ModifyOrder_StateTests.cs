@@ -9,7 +9,7 @@ namespace Tiba.OME.Domain.Tests.Unit.OrderBookTests.OrdersTests;
 public class ModifyOrder_StateTests : BaseOrderBookTest
 {
     [Fact]
-    public virtual void
+    public virtual async Task
         ModifyOrder_Should_Cancel_The_Given_BuyOrder_And_Then_Place_A_NewBuyOrder_When_Investor_Change_TheQuantity()
     {
         var price = 1000;
@@ -17,16 +17,15 @@ public class ModifyOrder_StateTests : BaseOrderBookTest
         EnqueueOrders(PostedOrder);
 
         var newQuantity = 13;
-        ModifiedOrder = CurrentOrderBook.ModifyOrder(PostedOrder.Id, newQuantity, price);
+        ModifiedOrder = await CurrentOrderBook.ModifyOrder(PostedOrder.Id, newQuantity, price);
 
         AssertCancelledOrder(PostedOrder);
         AssertActiveOrder(ModifiedOrder);
     }
 
 
-
     [Fact]
-    public virtual void
+    public virtual async Task
         ModifyOrder_Should_Cancel_The_Given_BuyOrder_And_Then_Place_A_NewBuyOrder_When_The_Investor_Change_The_Price()
     {
         var quantity = 10;
@@ -34,7 +33,7 @@ public class ModifyOrder_StateTests : BaseOrderBookTest
         EnqueueOrders(PostedOrder);
 
         var newPrice = 8000;
-        ModifiedOrder = CurrentOrderBook.ModifyOrder(PostedOrder.Id, quantity, newPrice);
+        ModifiedOrder = await CurrentOrderBook.ModifyOrder(PostedOrder.Id, quantity, newPrice);
 
         CurrentOrderBook.Orders.Count.Should().Be(1);
         AssertCancelledOrder(PostedOrder);
@@ -42,14 +41,14 @@ public class ModifyOrder_StateTests : BaseOrderBookTest
     }
 
     [Fact]
-    public virtual void
+    public virtual async Task
         ModifyOrder_Fulfill_The_Given_BuyOrder_When_ItsQuantity_Modify_To_TheFirst_Available_PostedAsk_Quantity()
     {
         PostedOrder = NewOrder(OrderSide.Buy, 10, 1000);
         var sellOrder = NewOrder(OrderSide.Sell, 8, 2000, CustomerConsts.FatemehMontazeri);
         EnqueueOrders(PostedOrder, sellOrder);
 
-        ModifiedOrder = CurrentOrderBook.ModifyOrder(PostedOrder.Id, 8, 2100);
+        ModifiedOrder = await CurrentOrderBook.ModifyOrder(PostedOrder.Id, 8, 2100);
 
         CurrentOrderBook.Orders.Count.Should().Be(0);
         AssertCancelledOrder(PostedOrder);
@@ -58,14 +57,14 @@ public class ModifyOrder_StateTests : BaseOrderBookTest
 
 
     [Fact]
-    public virtual void
+    public virtual async Task
         ModifyOrder_Should_Partially_Fill_The_Given_PostedBid_When_ItsQuantity_Modified_To_TheNumber_Greater_Than_PostedAsk_Quantity()
     {
         PostedOrder = NewOrder(OrderSide.Buy, 10, 1000);
         var sellOrder = NewOrder(OrderSide.Sell, 8, 2000, CustomerConsts.FatemehMontazeri);
         EnqueueOrders(PostedOrder, sellOrder);
 
-        ModifiedOrder = CurrentOrderBook.ModifyOrder(PostedOrder.Id, 15, 2100);
+        ModifiedOrder = await CurrentOrderBook.ModifyOrder(PostedOrder.Id, 15, 2100);
 
         CurrentOrderBook.Orders.Count.Should().Be(1);
         AssertFulfilledOrder(sellOrder);
@@ -74,12 +73,14 @@ public class ModifyOrder_StateTests : BaseOrderBookTest
 
 
     [Fact]
-    public void ModifyOrder_Should_Throw_Exception_When_Order_NotFound()
+    public async Task ModifyOrder_Should_Throw_Exception_When_Order_NotFound()
     {
         var currentOrderBook = _builder.Build();
         var notExistOrderId = Guid.NewGuid();
 
-        Assert.Throws<OrderNofFoundException>(() => { currentOrderBook.ModifyOrder(notExistOrderId, 10, 13); });
+        await Assert.ThrowsAsync<OrderNofFoundException>(async () =>
+        {
+            await currentOrderBook.ModifyOrder(notExistOrderId, 10, 13);
+        });
     }
-
 }

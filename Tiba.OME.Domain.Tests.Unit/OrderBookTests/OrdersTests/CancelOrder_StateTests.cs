@@ -9,14 +9,14 @@ public class CancelOrder_StateTests : BaseOrderBookTest
     [Theory]
     [InlineData(OrderSide.Buy)]
     [InlineData(OrderSide.Sell)]
-    public virtual void CancelOrder_Should_Change_The_Given_OrderState_To_Cancelled(OrderSide orderSide)
+    public virtual async Task CancelOrder_Should_Change_The_Given_OrderState_To_Cancelled(OrderSide orderSide)
     {
         PostedOrder = _testOrderBuilder
             .WithOrderSide(orderSide)
             .Build();
         CurrentOrderBook = _builder.Build(PostedOrder);
 
-        var order = CurrentOrderBook.CancelOrder(PostedOrder.Id);
+        var order = await CurrentOrderBook.CancelOrder(PostedOrder.Id);
 
         CurrentOrderBook.Orders.Count.Should().Be(0);
         order.OrderState.Should().Be(OrderState.Cancelled);

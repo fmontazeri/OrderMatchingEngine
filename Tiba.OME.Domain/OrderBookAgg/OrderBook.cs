@@ -3,6 +3,7 @@ using Tiba.OME.Domain.Core;
 using Tiba.OME.Domain.OrderBookAgg.Comparers;
 using Tiba.OME.Domain.OrderBookAgg.Events;
 using Tiba.OME.Domain.OrderBookAgg.Exceptions;
+using Tiba.OME.Domain.OrderBookAgg.Options;
 
 namespace Tiba.OME.Domain.OrderBookAgg;
 
@@ -40,7 +41,7 @@ public class OrderBook : AggregateRootBase<Guid>
         }
     }
 
-    public virtual IOrder AddOrder(IOrderOptions options)
+    public virtual async Task<IOrder> AddOrder(IOrderOptions options)
     {
         GuardAgainstNotMatchInstrument(options);
         var incomingOrder = Order.New(options);
@@ -73,16 +74,16 @@ public class OrderBook : AggregateRootBase<Guid>
         }
     }
 
-    public IOrder ModifyOrder(Guid orderId, int quantity, decimal price)
+    public virtual async Task<IOrder> ModifyOrder(Guid orderId, int quantity, decimal price)
     {
         GuardAgainstInvalidOrder(orderId);
         var incomingOrder = (IOrder?)Orders[orderId];
         SetAsCancelled(incomingOrder);
         var options = Order.NewOptions(incomingOrder, quantity, price);
-        return AddOrder(options);
+        return await AddOrder(options);
     }
 
-    public IOrder CancelOrder(Guid orderId)
+    public virtual async Task<IOrder> CancelOrder(Guid orderId)
     {
         var incomingOrder = (IOrder?)Orders[orderId];
         SetAsCancelled(incomingOrder);
@@ -108,11 +109,6 @@ public class OrderBook : AggregateRootBase<Guid>
     {
         return incomingOrder.Quantity == 0;
     }
-
-    // private bool IsOrderActive(IOrder incomingOrder)
-    // {
-    //     return incomingOrder?.Quantity > 0;
-    // }
 
     private void SetAsCancelled(IOrder? incomingOrder)
     {
