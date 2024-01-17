@@ -66,7 +66,6 @@ public class OrderBookQueuingDecorator : OrderBook, IAsyncDisposable, IDisposabl
             try
             {
                 item = _queue.Take();
-                Console.WriteLine($"Take item");
             }
             catch
             {
