@@ -78,9 +78,11 @@ public class ModifyOrder_StateTests : BaseOrderBookTest
         var currentOrderBook = _builder.Build();
         var notExistOrderId = Guid.NewGuid();
 
-        await Assert.ThrowsAsync<OrderNofFoundException>(async () =>
+        var exception = await Assert.ThrowsAsync<OrderNofFoundException>(async () =>
         {
             await currentOrderBook.ModifyOrder(notExistOrderId, 10, 13);
         });
+        
+        exception.Message.Should().Be(OrderNofFoundException.ErrorMessage);
     }
 }
