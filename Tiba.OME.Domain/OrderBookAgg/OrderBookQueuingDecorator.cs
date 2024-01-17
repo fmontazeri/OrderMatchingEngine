@@ -2,33 +2,27 @@ using System.Collections.Concurrent;
 
 namespace Tiba.OME.Domain.OrderBookAgg;
 
-public class OrderBookQueuingDecorator : OrderBook,IAsyncDisposable, IDisposable
+public class OrderBookQueuingDecorator : OrderBook, IAsyncDisposable, IDisposable
 {
     private BlockingCollection<OrderQueueItem> _queue { get; } = new();
 
-    public class OrderQueueItem
+    private class OrderQueueItem(Func<Task<IOrder>> command)
     {
-        public OrderQueueItem(Func<Task<IOrder>> command)
-        {
-            this.command = command;
-            Completion = new TaskCompletionSource<IOrder>();
-        }
-
         public async Task Execute()
         {
             var res = await command();
             Completion.SetResult(res);
         }
 
-        private readonly Func<Task<IOrder>> command;
-        public TaskCompletionSource<IOrder> Completion{ get; }
-     }
+        public TaskCompletionSource<IOrder> Completion { get; } = new();
+    }
 
     private readonly Task processorTask;
+
     public OrderBookQueuingDecorator(Guid id, string instrumentCode, List<IOrder> orders) : base(id, instrumentCode,
         orders)
     {
-        processorTask = Task.Run(()=>Processor());
+        processorTask = Task.Run(() => Processor());
     }
 
     public override Task<IOrder> AddOrder(IOrderOptions options)
@@ -38,6 +32,7 @@ public class OrderBookQueuingDecorator : OrderBook,IAsyncDisposable, IDisposable
             var result = base.AddOrder(options);
             return result;
         });
+
         _queue.Add(item);
         return item.Completion.Task;
     }
@@ -66,14 +61,17 @@ public class OrderBookQueuingDecorator : OrderBook,IAsyncDisposable, IDisposable
 
     private async Task Processor()
     {
-        while( !_queue.IsCompleted || _queue.Any())
+        while (!_queue.IsCompleted || _queue.Any())
         {
             OrderQueueItem? item = null;
             try
             {
                 item = _queue.Take();
             }
-            catch { }
+            catch
+            {
+            }
+
             await item?.Execute();
         }
     }
