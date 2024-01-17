@@ -73,6 +73,11 @@ public class TestOrder : IOrder
             : this.Price <= otherOrder.Price;
     }
 
+    public bool IsOrderFulfilled()
+    {
+        return this.Quantity == 0 && this.OrderState == OrderState.Fulfilled;
+    }
+
     private bool DoesBuyAndSellOrderBelongToACustomer(IOrder otherOrder)
     {
         return this.CustomerCode == otherOrder.CustomerCode;

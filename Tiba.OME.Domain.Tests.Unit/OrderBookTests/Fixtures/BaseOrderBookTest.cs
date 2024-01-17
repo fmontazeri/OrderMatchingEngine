@@ -8,19 +8,29 @@ namespace Tiba.OME.Domain.Tests.Unit.OrderBookTests.Fixtures;
 public abstract class BaseOrderBookTest
 {
     public readonly OrderBookTestBuilder _builder = new();
+
     public readonly TestOrderBuilder _testOrderBuilder = new();
+
+    // public OrderBookQueuingDecorator CurrentOrderBook { get; set; }
     public OrderBook CurrentOrderBook { get; set; }
     public IOrder PostedOrder { get; set; }
     public IOrder IncomingOrder { get; set; }
     public IOrder ModifiedOrder { get; set; }
 
 
+    // protected async  Task EnqueueOrders(params IOrder[] incomingOrders)
+    // {
+    //     await using var queuingDecorator = _builder.Build(incomingOrders);
+    //     CurrentOrderBook = queuingDecorator;
+    //     //CurrentOrderBook =  _builder.Build(incomingOrders);
+    // }
+    //
+
     protected void EnqueueOrders(params IOrder[] incomingOrders)
     {
         CurrentOrderBook = _builder.Build(incomingOrders);
     }
-    
-   
+
     protected IOrder NewOrder(OrderSide orderSide, int quantity, decimal price,
         string customerCode = CustomerConsts.YaserAbbasi)
     {

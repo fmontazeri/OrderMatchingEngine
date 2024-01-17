@@ -87,4 +87,8 @@ public class Order : EntityBase<Guid>, IOrder
     {
         return this.CustomerCode == otherOrder.CustomerCode;
     }
+    public bool IsOrderFulfilled()
+    {
+        return this.Quantity == 0 && this.OrderState == OrderState.Fulfilled;
+    }
 }

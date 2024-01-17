@@ -21,7 +21,7 @@ public class OrderBookTests : BaseOrderBookTest
     [Fact]
     public async Task AddOrder_Should_Place_IncomingOrder_In_Queue()
     {
-        var orderBook = _builder.Build();
+        var orderBook =  _builder.Build();
         var fakeOrderBookRepo = Substitute.For<IOrderBookRepository>();
         fakeOrderBookRepo.GetByInstrumentCode(orderBook.InstrumentCode).Returns(orderBook);
         var orderBookService = new OrderBookService(fakeOrderBookRepo);

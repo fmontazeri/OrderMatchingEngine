@@ -12,4 +12,5 @@ public interface IOrder : IOrderOptions
     public void SetAsCancelled();
     public bool IsValidToMatch();
     public bool IsMatchedTo(IOrder order);
+    public bool IsOrderFulfilled();
 }

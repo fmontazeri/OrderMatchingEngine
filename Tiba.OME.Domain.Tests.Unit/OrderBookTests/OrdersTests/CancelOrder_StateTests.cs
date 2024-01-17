@@ -14,7 +14,7 @@ public class CancelOrder_StateTests : BaseOrderBookTest
         PostedOrder = _testOrderBuilder
             .WithOrderSide(orderSide)
             .Build();
-        CurrentOrderBook = _builder.Build(PostedOrder);
+        CurrentOrderBook =  _builder.Build(PostedOrder);
 
         var order = await CurrentOrderBook.CancelOrder(PostedOrder.Id);
 

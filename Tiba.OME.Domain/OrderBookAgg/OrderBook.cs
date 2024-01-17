@@ -55,7 +55,7 @@ public class OrderBook : AggregateRootBase<Guid>
     {
         IOrder? topOrder;
         while (otherSideQueue.Count > 0 && (topOrder = otherSideQueue.Peek()) != null &&
-               !IsOrderFulfilled(incomingOrder))
+               !incomingOrder.IsOrderFulfilled())
         {
             if (!topOrder.IsValidToMatch())
             {
@@ -80,7 +80,8 @@ public class OrderBook : AggregateRootBase<Guid>
         var incomingOrder = (IOrder?)Orders[orderId];
         SetAsCancelled(incomingOrder);
         var options = Order.NewOptions(incomingOrder, quantity, price);
-        return await AddOrder(options);
+        var result = await this.AddOrder(options);
+        return result;
     }
 
     public virtual async Task<IOrder> CancelOrder(Guid orderId)
@@ -103,11 +104,6 @@ public class OrderBook : AggregateRootBase<Guid>
         order.SetLeftOver(matchedQuantity);
         if (order.IsValidToMatch())
             Orders.Add(order.Id, order);
-    }
-
-    private bool IsOrderFulfilled(IOrder incomingOrder)
-    {
-        return incomingOrder.Quantity == 0;
     }
 
     private void SetAsCancelled(IOrder? incomingOrder)
