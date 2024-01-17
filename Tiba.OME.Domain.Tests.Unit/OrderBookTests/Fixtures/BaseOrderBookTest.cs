@@ -33,25 +33,25 @@ public abstract class BaseOrderBookTest
         return order1;
     }
 
-    public void AssertActiveOrder(IOrder order)
+    protected void AssertActiveOrder(IOrder order)
     {
         CurrentOrderBook.Orders[order.Id].As<IOrder?>().AssertActiveOrderState();
         CurrentOrderBook.AssertOrderOptions(order);
     }
 
-    public void AssertCancelledOrder(IOrder order)
+    protected void AssertCancelledOrder(IOrder order)
     {
         order.OrderState.Should().Be(OrderState.Cancelled);
         CurrentOrderBook.Orders[order.Id].Should().BeNull();
     }
 
-    public void AssertFulfilledOrder(IOrder order)
+    protected void AssertFulfilledOrder(IOrder order)
     {
         order.AssertFulfilledOrderState();
         CurrentOrderBook.Orders[order.Id].As<IOrder?>().Should().BeNull();
     }
 
-    public void AssertPartiallyFulfilledOrder(IOrder order, int expectedQuantity)
+    protected void AssertPartiallyFulfilledOrder(IOrder order, int expectedQuantity)
     {
         AssertActiveOrder(order);
         order.Quantity.Should().Be(expectedQuantity);

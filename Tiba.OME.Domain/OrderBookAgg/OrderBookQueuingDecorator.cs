@@ -6,23 +6,23 @@ public class OrderBookQueuingDecorator : OrderBook, IAsyncDisposable, IDisposabl
 {
     private BlockingCollection<OrderQueueItem> _queue { get; } = new();
 
-    private class OrderQueueItem(Func<Task<IOrder>> command)
-    {
-        public async Task Execute()
-        {
-            var res = await command();
-            Completion.SetResult(res);
-        }
-
-        public TaskCompletionSource<IOrder> Completion { get; } = new();
-    }
-
     private readonly Task processorTask;
 
     public OrderBookQueuingDecorator(Guid id, string instrumentCode, List<IOrder> orders) : base(id, instrumentCode,
         orders)
     {
-        processorTask = Task.Run(() => Processor());
+        processorTask = Task.Run(() => Processor().GetAwaiter().GetResult());
+    }
+
+    private class OrderQueueItem(Func<Task<IOrder>> command)
+    {
+        public async Task Execute()
+        {
+            var result = await command();
+            Completion.SetResult(result);
+        }
+
+        public TaskCompletionSource<IOrder> Completion { get; } = new();
     }
 
     public override Task<IOrder> AddOrder(IOrderOptions options)
@@ -32,7 +32,6 @@ public class OrderBookQueuingDecorator : OrderBook, IAsyncDisposable, IDisposabl
             var result = base.AddOrder(options);
             return result;
         });
-
         _queue.Add(item);
         return item.Completion.Task;
     }
@@ -67,6 +66,7 @@ public class OrderBookQueuingDecorator : OrderBook, IAsyncDisposable, IDisposabl
             try
             {
                 item = _queue.Take();
+                Console.WriteLine($"Take item");
             }
             catch
             {
@@ -84,6 +84,7 @@ public class OrderBookQueuingDecorator : OrderBook, IAsyncDisposable, IDisposabl
     public async ValueTask DisposeAsync()
     {
         _queue.CompleteAdding();
-        await processorTask;
+        if (_queue.Count != 0)
+            await processorTask;
     }
 }

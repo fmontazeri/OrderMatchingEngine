@@ -26,10 +26,10 @@ public class OrderBookQueuingDecoratorTests
         var order = await queuingDecorator.AddOrder(IncomingOrder);
 
         queuingDecorator.Orders.Count.Should().Be(1);
-        AssertActiveOrder(order,queuingDecorator);
+        AssertActiveOrder(order, queuingDecorator);
     }
 
-    public void AssertActiveOrder(IOrder order , OrderBookQueuingDecorator orderBook)
+    public void AssertActiveOrder(IOrder order, OrderBookQueuingDecorator orderBook)
     {
         orderBook.Orders[order.Id].As<IOrder?>().AssertActiveOrderState();
         orderBook.AssertOrderOptions(order);
