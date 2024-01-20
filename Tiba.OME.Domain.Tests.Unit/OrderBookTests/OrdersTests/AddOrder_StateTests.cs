@@ -195,13 +195,13 @@ public class AddOrder_StateTests : BaseOrderBookTest
             .BuildOption();
 
 
-        //TODO:
-        // var exception = await Assert.ThrowsAsync<InstrumentNotMatchException>(async () =>
-        // {
-        //     var order = await CurrentOrderBook.AddOrder(IncomingOrder);
-        // });
-        // exception.Message.Should().Be(InstrumentNotMatchException.ErrorMessage);
-        // CurrentOrderBook.Orders.Count.Should().Be(1);
-        // AssertActiveOrder(PostedOrder);
+        TODO:
+         var exception = await Assert.ThrowsAsync<InstrumentNotMatchException>(async () =>
+         {
+             var order = await CurrentOrderBook.AddOrder(IncomingOrder);
+         });
+        exception.Message.Should().Be(InstrumentNotMatchException.ErrorMessage);
+        CurrentOrderBook.Orders.Count.Should().Be(1);
+        AssertActiveOrder(PostedOrder);
     }
 }

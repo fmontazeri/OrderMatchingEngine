@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Tiba.OME.API.Components;
 using Tiba.OME.Application.CommandHandlers;
 using Tiba.OME.Application.Contracts;
+using Tiba.OME.Application.Contracts.Commands;
 using Tiba.OME.Application.Contracts.Services;
 using Tiba.OME.Application.Services;
 using Tiba.OME.Domain.OrderBookAgg;
@@ -18,8 +19,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddTransient<IOrderBookService, OrderBookService>();
-//builder.Services.AddTransient<IOrderBookRepository, IOrderBookRepository>();
-builder.Services.AddScoped(typeof(ICommandHandler<>), typeof(OrderBookCommandHandler));
+builder.Services.AddTransient<IOrderBookRepository, OrderBookRepository>();
+//builder.Services.AddScoped(typeof(ICommandHandler<>), typeof(ICommandHandler<AddOrderCommand>));
 
 var app = builder.Build();
 
