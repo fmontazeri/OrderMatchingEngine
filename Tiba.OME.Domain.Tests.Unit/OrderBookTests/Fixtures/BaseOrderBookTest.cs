@@ -17,7 +17,6 @@ public abstract class BaseOrderBookTest
     public IOrder IncomingOrder { get; set; }
     public IOrder ModifiedOrder { get; set; }
 
-
     // protected async  Task EnqueueOrders(params IOrder[] incomingOrders)
     // {
     //     await using var queuingDecorator = _builder.Build(incomingOrders);
