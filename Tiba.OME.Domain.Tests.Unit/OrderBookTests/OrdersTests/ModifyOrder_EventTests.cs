@@ -8,10 +8,10 @@ namespace Tiba.OME.Domain.Tests.Unit.OrderBookTests.OrdersTests;
 public class ModifyOrder_EventTests : ModifyOrder_StateTests
 {
     [Fact]
-    public override void
+    public override async Task
         ModifyOrder_Should_Cancel_The_Given_BuyOrder_And_Then_Place_A_NewBuyOrder_When_Investor_Change_TheQuantity()
     {
-        base
+        await base
             .ModifyOrder_Should_Cancel_The_Given_BuyOrder_And_Then_Place_A_NewBuyOrder_When_Investor_Change_TheQuantity();
         CurrentOrderBook.GetPublishedEvents().Should().HaveCount(2);
         CurrentOrderBook.AssertEvent(new OrderCancelledDomainEvent(PostedOrder));
@@ -19,10 +19,10 @@ public class ModifyOrder_EventTests : ModifyOrder_StateTests
     }
 
     [Fact]
-    public override void
+    public override async Task
         ModifyOrder_Should_Cancel_The_Given_BuyOrder_And_Then_Place_A_NewBuyOrder_When_The_Investor_Change_The_Price()
     {
-        base
+        await base
             .ModifyOrder_Should_Cancel_The_Given_BuyOrder_And_Then_Place_A_NewBuyOrder_When_The_Investor_Change_The_Price();
         CurrentOrderBook.GetPublishedEvents().Should().HaveCount(2);
         CurrentOrderBook.AssertEvent(new OrderCancelledDomainEvent(PostedOrder));
@@ -30,10 +30,11 @@ public class ModifyOrder_EventTests : ModifyOrder_StateTests
     }
 
     [Fact]
-    public override void
+    public override async Task
         ModifyOrder_Fulfill_The_Given_BuyOrder_When_ItsQuantity_Modify_To_TheFirst_Available_PostedAsk_Quantity()
     {
-        base.ModifyOrder_Fulfill_The_Given_BuyOrder_When_ItsQuantity_Modify_To_TheFirst_Available_PostedAsk_Quantity();
+        await base
+            .ModifyOrder_Fulfill_The_Given_BuyOrder_When_ItsQuantity_Modify_To_TheFirst_Available_PostedAsk_Quantity();
         CurrentOrderBook.GetPublishedEvents().Should().HaveCount(3);
         var matchedQuantity = 8;
         CurrentOrderBook.AssertEvent(new OrderCancelledDomainEvent(PostedOrder));
@@ -44,10 +45,10 @@ public class ModifyOrder_EventTests : ModifyOrder_StateTests
     }
 
     [Fact]
-    public override void
+    public override async Task
         ModifyOrder_Should_Partially_Fill_The_Given_PostedBid_When_ItsQuantity_Modified_To_TheNumber_Greater_Than_PostedAsk_Quantity()
     {
-        base
+        await base
             .ModifyOrder_Should_Partially_Fill_The_Given_PostedBid_When_ItsQuantity_Modified_To_TheNumber_Greater_Than_PostedAsk_Quantity();
         CurrentOrderBook.GetPublishedEvents().Should().HaveCount(3);
         CurrentOrderBook.AssertEvent(new OrderCancelledDomainEvent(PostedOrder));

@@ -21,7 +21,7 @@ public class Order : EntityBase<Guid>, IOrder
             throw new QuantityIsNotValidException();
         if (price <= 0)
             throw new PriceIsNotValidException();
-        
+
         this.Quantity = quantity;
         this.Price = price;
         this.CustomerCode = customerCode;
@@ -68,5 +68,27 @@ public class Order : EntityBase<Guid>, IOrder
     {
         this.OrderState = OrderState.Cancelled;
         this.ModifiedOn = DateTime.Now;
+    }
+
+    public bool IsValidToMatch()
+    {
+        return this.Quantity > 0 && this.OrderState == OrderState.Active;
+    }
+
+    public bool IsMatchedTo(IOrder otherOrder)
+    {
+        if (this.DoesBuyAndSellOrderBelongToACustomer(otherOrder)) return false;
+        return this.OrderSide == OrderSide.Buy
+            ? this.Price >= otherOrder.Price
+            : this.Price <= otherOrder.Price;
+    }
+
+    private bool DoesBuyAndSellOrderBelongToACustomer(IOrder otherOrder)
+    {
+        return this.CustomerCode == otherOrder.CustomerCode;
+    }
+    public bool IsOrderFulfilled()
+    {
+        return this.Quantity == 0 && this.OrderState == OrderState.Fulfilled;
     }
 }

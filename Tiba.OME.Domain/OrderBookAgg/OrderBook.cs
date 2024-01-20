@@ -3,6 +3,7 @@ using Tiba.OME.Domain.Core;
 using Tiba.OME.Domain.OrderBookAgg.Comparers;
 using Tiba.OME.Domain.OrderBookAgg.Events;
 using Tiba.OME.Domain.OrderBookAgg.Exceptions;
+using Tiba.OME.Domain.OrderBookAgg.Options;
 
 namespace Tiba.OME.Domain.OrderBookAgg;
 
@@ -40,7 +41,7 @@ public class OrderBook : AggregateRootBase<Guid>
         }
     }
 
-    public IOrder AddOrder(IOrderOptions options)
+    public virtual async Task<IOrder> AddOrder(IOrderOptions options)
     {
         GuardAgainstNotMatchInstrument(options);
         var incomingOrder = Order.New(options);
@@ -54,15 +55,15 @@ public class OrderBook : AggregateRootBase<Guid>
     {
         IOrder? topOrder;
         while (otherSideQueue.Count > 0 && (topOrder = otherSideQueue.Peek()) != null &&
-               !IsOrderFulfilled(incomingOrder))
+               !incomingOrder.IsOrderFulfilled())
         {
-            if (!IsOrderActive(topOrder))
+            if (!topOrder.IsValidToMatch())
             {
                 otherSideQueue.Dequeue();
                 continue;
             }
 
-            if (!IsOrderMatchedBy(incomingOrder, topOrder))
+            if (!incomingOrder.IsMatchedTo(topOrder))
                 break;
 
             var matchedQuantity = Math.Min(topOrder.Quantity, incomingOrder.Quantity);
@@ -73,65 +74,21 @@ public class OrderBook : AggregateRootBase<Guid>
         }
     }
 
-    // private void MatchOrder(IOrder incomingOrder,
-    //     PriorityQueue<IOrder, IOrder> otherSideQueue)
-    // {
-    //     while (otherSideQueue.Count > 0)
-    //     {
-    //         var activeQueuedOrder = PeekActiveOrder(otherSideQueue);
-    //         if (!(activeQueuedOrder != null &&
-    //               IsOrderMatchedBy(incomingOrder, activeQueuedOrder)))
-    //             break;
-    //
-    //         var matchedQuantity = Math.Min(activeQueuedOrder.Quantity, incomingOrder.Quantity);
-    //         SetLeftOver(matchedQuantity, activeQueuedOrder);
-    //         SetLeftOver(matchedQuantity, incomingOrder);
-    //
-    //         Publish(new OrderMatchedDomainEvent(matchedQuantity, incomingOrder, activeQueuedOrder));
-    //         if (!IsOrderFulfilled(incomingOrder)) continue;
-    //         break;
-    //     }
-    // }
-
-    public IOrder ModifyOrder(Guid orderId, int quantity, decimal price)
+    public virtual async Task<IOrder> ModifyOrder(Guid orderId, int quantity, decimal price)
     {
         GuardAgainstInvalidOrder(orderId);
         var incomingOrder = (IOrder?)Orders[orderId];
         SetAsCancelled(incomingOrder);
         var options = Order.NewOptions(incomingOrder, quantity, price);
-        return AddOrder(options);
+        var result = await this.AddOrder(options);
+        return result;
     }
 
-    public IOrder CancelOrder(Guid orderId)
+    public virtual async Task<IOrder> CancelOrder(Guid orderId)
     {
         var incomingOrder = (IOrder?)Orders[orderId];
         SetAsCancelled(incomingOrder);
         return incomingOrder;
-    }
-
-    // private IOrder? PeekActiveOrder(PriorityQueue<IOrder, IOrder> otherSideQueue)
-    // {
-    //     while (otherSideQueue.Count > 0)
-    //     {
-    //         var activeOrder = otherSideQueue.Peek();
-    //         if (activeOrder.OrderState == OrderState.Active) return activeOrder;
-    //         otherSideQueue.Dequeue();
-    //     }
-    //
-    //     return null;
-    // }
-
-    private bool IsOrderMatchedBy(IOrder incomingOrder, IOrder queuedOrder)
-    {
-        if (DoesBuyAndSellOrderBelongToACustomer(incomingOrder, queuedOrder)) return false;
-        return incomingOrder.OrderSide == OrderSide.Buy
-            ? incomingOrder.Price >= queuedOrder.Price
-            : incomingOrder.Price <= queuedOrder.Price;
-    }
-
-    private bool DoesBuyAndSellOrderBelongToACustomer(IOrder incomingOrder, IOrder queuedOrder)
-    {
-        return incomingOrder.CustomerCode == queuedOrder.CustomerCode;
     }
 
     private void GuardAgainstNotMatchInstrument(IOrderOptions options)
@@ -145,18 +102,8 @@ public class OrderBook : AggregateRootBase<Guid>
         if (!Orders.ContainsKey(order.Id)) return;
         Orders.Remove(order.Id);
         order.SetLeftOver(matchedQuantity);
-        if (IsOrderActive(order))
+        if (order.IsValidToMatch())
             Orders.Add(order.Id, order);
-    }
-
-    private bool IsOrderFulfilled(IOrder incomingOrder)
-    {
-        return incomingOrder.Quantity == 0;
-    }
-
-    private bool IsOrderActive(IOrder incomingOrder)
-    {
-        return incomingOrder?.Quantity > 0;
     }
 
     private void SetAsCancelled(IOrder? incomingOrder)

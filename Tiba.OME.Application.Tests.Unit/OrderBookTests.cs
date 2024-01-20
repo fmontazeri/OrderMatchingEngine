@@ -1,7 +1,10 @@
 using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
+using Tiba.OME.Application.CommandHandlers;
+using Tiba.OME.Application.Contracts;
 using Tiba.OME.Application.Contracts.Commands;
+using Tiba.OME.Application.Contracts.Services;
 using Tiba.OME.Application.Exceptions;
 using Tiba.OME.Application.Services;
 using Tiba.OME.Domain.OrderBookAgg;
@@ -18,16 +21,17 @@ public class OrderBookTests : BaseOrderBookTest
     [Fact]
     public async Task AddOrder_Should_Place_IncomingOrder_In_Queue()
     {
-        var orderBook = _builder.Build();
-        var fakeEngineRepo = Substitute.For<IOrderBookRepository>();
-        fakeEngineRepo.GetByInstrumentCode(InstrumentConsts.OfoghBKoorosh).Returns(orderBook);
-        var engineService = new OrderBookService(fakeEngineRepo);
+        var orderBook =  _builder.Build();
+        var fakeOrderBookRepo = Substitute.For<IOrderBookRepository>();
+        fakeOrderBookRepo.GetByInstrumentCode(orderBook.InstrumentCode).Returns(orderBook);
+        var orderBookService = new OrderBookService(fakeOrderBookRepo);
         var command = new AddOrderCommand(OrderSide.Buy, 10, 1200, InstrumentConsts.OfoghBKoorosh,
             CustomerConsts.FatemehMontazeri);
 
-        var expected = await engineService.AddOrder(command);
+        var expected = await orderBookService.AddOrder(command);
 
-        await fakeEngineRepo.Received(1).UpdateAsync(orderBook);
+        await fakeOrderBookRepo.Received(1).UpdateAsync(orderBook);
+        await fakeOrderBookRepo.Received(1).GetByInstrumentCode(orderBook.InstrumentCode);
         orderBook.Orders.Count.Should().Be(1);
         orderBook.AssertOrderOptions(expected);
         orderBook.GetPublishedEvents().Should().HaveCount(1);
@@ -44,12 +48,13 @@ public class OrderBookTests : BaseOrderBookTest
         var orderBook = _builder.Build(postedOrder);
         var fakeOrderBookRepo = Substitute.For<IOrderBookRepository>();
         fakeOrderBookRepo.GetByInstrumentCode(postedOrder.InstrumentCode).Returns(orderBook);
-        var engineService = new OrderBookService(fakeOrderBookRepo);
+        var fakeOrderBookService = new OrderBookService(fakeOrderBookRepo);
         var command = new UpdateOrderCommand(postedOrder.Id, postedOrder.Quantity, 1600, postedOrder.InstrumentCode);
 
-        var expected = await engineService.UpdateOrder(command);
+        var expected = await fakeOrderBookService.UpdateOrder(command);
 
         await fakeOrderBookRepo.Received(1).UpdateAsync(orderBook);
+        await fakeOrderBookRepo.Received(1).GetByInstrumentCode(postedOrder.InstrumentCode);
         postedOrder.OrderState.Should().Be(OrderState.Cancelled);
         orderBook.Orders.Count.Should().Be(1);
         orderBook.Orders[postedOrder.Id].Should().BeNull();
@@ -73,13 +78,13 @@ public class OrderBookTests : BaseOrderBookTest
         var orderBook = _builder.Build(postedOrder);
         var fakeOrderBookRepo = Substitute.For<IOrderBookRepository>();
         fakeOrderBookRepo.GetByInstrumentCode(postedOrder.InstrumentCode).Returns(orderBook);
-        var engineService = new OrderBookService(fakeOrderBookRepo);
+        var orderBookService = new OrderBookService(fakeOrderBookRepo);
         var command =
             new UpdateOrderCommand(postedOrder.Id, newQuantity, postedOrder.Price, postedOrder.InstrumentCode);
 
         var exception = await Assert.ThrowsAsync<QuantityIsNotValidException>(async () =>
         {
-            await engineService.UpdateOrder(command);
+            await orderBookService.UpdateOrder(command);
         });
         exception.Message.Should().Be(QuantityIsNotValidException.ErrorMessage);
     }
@@ -88,7 +93,7 @@ public class OrderBookTests : BaseOrderBookTest
     [Theory]
     [InlineData(100, 0)]
     [InlineData(100, -10)]
-    public async Task UpdateOrder_Should_Throw_Exception_Where_The_New_Quantity_Is_Lowe_Than_The_Given_Price(
+    public async Task UpdateOrder_Should_Throw_Exception_Where_The_New_Quantity_Is_Lower_Than_The_Given_Price(
         decimal price, decimal newPrice)
     {
         var postedOrder = _testOrderBuilder
@@ -121,14 +126,14 @@ public class OrderBookTests : BaseOrderBookTest
         var orderBookService = new OrderBookService(fakeOrderBookRepo);
         var cancelOrderCommand = new CancelOrderCommand(postedOrder.Id, postedOrder.InstrumentCode);
 
-        var order = await orderBookService.CancelOrder(cancelOrderCommand);
+        var expected = await orderBookService.CancelOrder(cancelOrderCommand);
 
         await fakeOrderBookRepo.Received(1).UpdateAsync(orderBook);
-        order.OrderState.Should().Be(OrderState.Cancelled);
+        expected.OrderState.Should().Be(OrderState.Cancelled);
         orderBook.Orders.Count.Should().Be(0);
         orderBook.Orders[postedOrder.Id].Should().BeNull();
         orderBook.GetPublishedEvents().Count.Should().Be(1);
-        orderBook.AssertEvent(new OrderCancelledDomainEvent(order));
+        orderBook.AssertEvent(new OrderCancelledDomainEvent(expected));
     }
 
     [Fact]
